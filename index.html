@@ -8,7 +8,19 @@
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+KR:wght@400;700&display=swap');
 
         body { margin: 0; background: #000; color: white; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #game-outer { position: relative; width: 450px; height: 750px; background: #0f0f0f; border: 4px solid #222; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1); transition: background 0.3s; }
+        
+        /* 1. 휴대폰 비율로 수정 */
+        #game-outer { 
+            position: relative; 
+            width: 95vw; 
+            max-width: 430px; 
+            aspect-ratio: 9 / 16; 
+            background: #0f0f0f; 
+            border: 4px solid #222; 
+            overflow: hidden; 
+            box-shadow: 0 0 50px rgba(0,0,0,1); 
+            transition: background 0.3s; 
+        }
 
         .layer { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.5s ease-in-out; }
 
@@ -17,11 +29,11 @@
 
         #home-screen { background: radial-gradient(circle, #1a1a1a, #000); z-index: 2000; opacity: 0; pointer-events: none; }
         #home-screen.active { opacity: 1; pointer-events: auto; }
-        .game-title { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin-bottom: 5px; }
+        .game-title { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin-bottom: 5px; }
         
         .nickname-input { background: rgba(255,255,255,0.1); border: 1px solid #00ffcc; border-radius: 5px; color: #fff; padding: 10px; text-align: center; font-family: 'Orbitron'; margin-bottom: 20px; outline: none; width: 200px; }
 
-        #billboard { width: 280px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
+        #billboard { width: 280px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 30px; cursor: pointer; transition: 0.3s; }
         #billboard:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
         .ranking-title { font-family: 'Orbitron'; font-size: 1rem; color: #00ffcc; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .ranking-list { list-style: none; padding: 0; margin: 0; font-family: 'Orbitron'; font-size: 0.9rem; }
@@ -36,10 +48,11 @@
         #rank-popup.active { opacity: 1; pointer-events: auto; }
         .rank-box { 
             background: #111; border: 2px solid #00ffcc; padding: 25px; border-radius: 20px; 
-            width: 80%; max-height: 70%; overflow-y: auto;
-            transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 80%; height: 70%; display: flex; flex-direction: column;
         }
-        #rank-popup.active .rank-box { transform: scale(1); }
+        .full-rank-scroll { flex: 1; overflow-y: auto; margin: 15px 0; padding-right: 5px; }
+        .full-rank-scroll::-webkit-scrollbar { width: 4px; }
+        .full-rank-scroll::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 2px; }
 
         .btn-group { display: flex; flex-direction: column; gap: 10px; width: 220px; }
         .main-btn { padding: 12px; font-size: 1.1rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 50px; font-weight: bold; transition: 0.3s; font-family: 'Orbitron', sans-serif; outline: none; }
@@ -73,21 +86,13 @@
         #home-btn { display: none; border-color: #ff4444; color: #ff4444; width: 55px; }
 
         .ball { 
-            position: absolute; width: 52px; height: 52px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; cursor: pointer; user-select: none; font-size: 1.2rem; z-index: 5; box-sizing: border-box;
+            position: absolute; width: 52px; height: 52px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; cursor: pointer; user-select: none; font-size: 1.2rem; z-index: 5; box-sizing: border-box; transition: transform 0.1s;
             backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: inset -5px -5px 12px rgba(0,0,0,0.2), inset 5px 5px 12px rgba(255,255,255,0.4), 0 8px 15px rgba(0,0,0,0.3);
             color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            /* 떨림 방지를 위해 transform만 transition 설정 */
-            transition: transform 0.1s ease-out, opacity 0.5s ease;
-            will-change: transform;
-            top: 0; left: 0;
         }
-        /* 선택 효과 복구: 겉 부분이 더 빛나도록 shadow와 border 강화 */
-        .ball.selected { 
-            z-index: 100 !important; 
-            box-shadow: 0 0 30px rgba(255,255,255,0.8), inset 0 0 15px rgba(255,255,255,0.6); 
-            border: 3px solid #fff !important; 
-        }
+        .ball::before { content: ''; position: absolute; top: 10%; left: 15%; width: 45%; height: 30%; background: linear-gradient(to bottom, rgba(255,255,255,0.7), transparent); border-radius: 50%; pointer-events: none; }
+        .ball.selected { transform: scale(1.15); z-index: 100 !important; box-shadow: 0 0 25px rgba(255,255,255,0.6), inset 0 0 10px rgba(255,255,255,0.5); border: 2px solid #fff; }
         
         .ball.gold { background: radial-gradient(circle at 30% 30%, rgba(255, 245, 180, 0.6), rgba(255, 215, 0, 0.4)) !important; border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
         .ball.bomb { background: radial-gradient(circle at 30% 30%, rgba(100, 100, 100, 0.6), rgba(20, 20, 20, 0.7)) !important; border-color: #ff6b6b; color: #ff6b6b; }
@@ -119,7 +124,7 @@
         <div class="game-title">ZERO SUM</div>
         
         <div id="billboard" onclick="showFullRank(true)">
-            <div class="ranking-title">GLOBAL RANKING</div>
+            <div class="ranking-title">TOP 3 RANKING</div>
             <ul class="ranking-list" id="rank-list"></ul>
             <div style="font-size: 0.6rem; text-align: center; color: #555; margin-top: 5px;">CLICK TO VIEW ALL</div>
         </div>
@@ -134,9 +139,11 @@
 
     <div id="rank-popup">
         <div class="rank-box">
-            <div class="ranking-title">ALL TIME RANKING</div>
-            <ul class="ranking-list" id="full-rank-list"></ul>
-            <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem; margin-top:20px;" onclick="showFullRank(false)">CLOSE</button></center>
+            <div class="ranking-title">TOP 100 RANKING</div>
+            <div class="full-rank-scroll">
+                <ul class="ranking-list" id="full-rank-list"></ul>
+            </div>
+            <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem;" onclick="showFullRank(false)">CLOSE</button></center>
         </div>
     </div>
 
@@ -181,7 +188,13 @@
     let isFrozen = false, isFoggy = false, freezeTimer = null, fogTimer = null;
     
     let feverGauge = 0, isFever = false, feverEndTime = 0;
-    const FEVER_MAX = 100, FEVER_DURATION = 5000, BALL_SIZE = 52, DEAD_LINE_Y = 750 - 75, COMBO_TIMEOUT = 3000;
+    
+    // 2. 유동적 높이 계산을 위해 DEAD_LINE_Y 초기값만 설정
+    const FEVER_MAX = 100, FEVER_DURATION = 5000, BALL_SIZE = 52, COMBO_TIMEOUT = 3000;
+    let DEAD_LINE_Y = screens.outer.offsetHeight - 75;
+
+    // 화면 리사이즈 시 데드라인 재계산
+    window.addEventListener('resize', () => { DEAD_LINE_Y = screens.outer.offsetHeight - 75; });
 
     let playerName = localStorage.getItem('zeroSumNick') || "";
     screens.nameInput.value = playerName;
@@ -219,9 +232,8 @@
             li.innerHTML = `<span>${idx + 1}. ${data.name}</span> <span>${data.score}</span>`;
             screens.rankList.appendChild(li);
         });
-
         screens.fullRankList.innerHTML = ranks.length ? "" : "<li style='text-align:center; opacity:0.5;'>NO DATA</li>";
-        ranks.slice(0, 10).forEach((data, idx) => {
+        ranks.slice(0, 100).forEach((data, idx) => {
             const li = document.createElement('li');
             li.className = `ranking-item ${idx === 0 ? 'top' : ''}`;
             li.innerHTML = `<span>${idx + 1}. ${data.name}</span> <span>${data.score}</span>`;
@@ -233,14 +245,10 @@
         if (finalScore <= 0) return;
         let ranks = JSON.parse(localStorage.getItem('zeroSumRanks')) || [];
         const existing = ranks.find(r => r.name === playerName);
-        if (existing) {
-            if (finalScore > existing.score) existing.score = finalScore;
-            else return;
-        } else {
-            ranks.push({ name: playerName, score: finalScore });
-        }
+        if (existing) { if (finalScore > existing.score) existing.score = finalScore; else return; } 
+        else { ranks.push({ name: playerName, score: finalScore }); }
         ranks.sort((a, b) => b.score - a.score);
-        ranks = ranks.slice(0, 10);
+        ranks = ranks.slice(0, 100);
         localStorage.setItem('zeroSumRanks', JSON.stringify(ranks));
         updateBillboard();
     }
@@ -305,10 +313,11 @@
         
         let currentDisplayVal = (isFever && (type === 'normal' || type === 'heavy')) ? (val > 0 ? 1 : -1) : val;
 
+        // 3. 공 생성 시 가로 범위를 현재 화면 너비에 맞게 계산
         const ballObj = { 
             el: ball, val: currentDisplayVal, originalVal: val, type: type, isLucky: isLucky, 
-            x: Math.random() * (450 - BALL_SIZE), y: -60, vx: (Math.random()-0.5)*0.3, vy: (baseSpeed + (score / 4000)) * (type === 'heavy' ? 1.7 : 1.0) + Math.random()*0.2,
-            speed: 0, isMelting: false, isSelected: false
+            x: Math.random() * (screens.outer.clientWidth - BALL_SIZE), y: -60, vx: (Math.random()-0.5)*0.3, 
+            speed: (baseSpeed + (score / 4000)) * (type === 'heavy' ? 1.7 : 1.0) + Math.random()*0.2, isMelting: false 
         };
         
         updateBallText(ball, ballObj.val, type);
@@ -338,28 +347,16 @@
         if (ballObj.type === 'bomb') { activateBomb(ballObj); return; }
         if (ballObj.type === 'freeze') { activateFreeze(ballObj); return; }
         if (ballObj.type === 'fog') { activateFog(ballObj); return; }
-
-        if (ballObj.isSelected) { 
-            selectedBalls = selectedBalls.filter(b => b !== ballObj); 
-            ballObj.el.classList.remove('selected'); 
-            ballObj.isSelected = false;
-            playSound(300, 'sine', 0.1); 
-        }
-        else { 
-            selectedBalls.push(ballObj); 
-            ballObj.el.classList.add('selected'); 
-            ballObj.isSelected = true;
-            playSound(600, 'sine', 0.1); 
-        }
+        if (selectedBalls.includes(ballObj)) { selectedBalls = selectedBalls.filter(b => b !== ballObj); ballObj.el.classList.remove('selected'); playSound(300, 'sine', 0.1); }
+        else { selectedBalls.push(ballObj); ballObj.el.classList.add('selected'); playSound(600, 'sine', 0.1); }
         updateSumDisplay();
     }
 
     function updateSumDisplay() {
         const sum = selectedBalls.reduce((s, b) => s + b.val, 0);
         sumEl.innerText = `SUM: ${selectedBalls.length === 0 ? 0 : sum}`;
-        if (selectedBalls.length > 0) {
-            sumEl.style.color = sum > 0 ? "#ffb4be" : (sum < 0 ? "#b4d2ff" : "#00ffcc");
-        } else { sumEl.style.color = "#00ffcc"; }
+        if (selectedBalls.length > 0) { sumEl.style.color = sum > 0 ? "#ffb4be" : (sum < 0 ? "#b4d2ff" : "#00ffcc"); } 
+        else { sumEl.style.color = "#00ffcc"; }
         if (selectedBalls.length > 0 && sum === 0) popBalls();
     }
 
@@ -377,10 +374,7 @@
             }
             const lastB = selectedBalls[selectedBalls.length - 1];
             if (combo > 1) showComboUI(combo, lastB.x, lastB.y);
-            selectedBalls.forEach(b => {
-                createParticle(b.x + BALL_SIZE/2, b.y + BALL_SIZE/2, b.isLucky ? '#ffd700' : (b.val > 0 ? '#ffb4be' : '#b4d2ff'));
-                b.el.remove(); balls = balls.filter(allB => allB !== b);
-            });
+            selectedBalls.forEach(b => { createParticle(b.x + BALL_SIZE/2, b.y + BALL_SIZE/2, b.isLucky ? '#ffd700' : (b.val > 0 ? '#ffb4be' : '#b4d2ff')); b.el.remove(); balls = balls.filter(allB => allB !== b); });
             selectedBalls = []; 
         } else { score += (selectedBalls.length + 1) * 20; }
         scoreEl.innerText = score;
@@ -422,20 +416,16 @@
         playSound(200, 'sawtooth', 0.3);
         createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#ff6b6b');
         setTimeout(() => {
-            ballObj.el.remove();
-            balls = balls.filter(b => b !== ballObj);
+            ballObj.el.remove(); balls = balls.filter(b => b !== ballObj);
             for(let i = 0; i < 3; i++) {
                 if(balls.length > 0) {
                     const target = balls[Math.floor(Math.random() * balls.length)];
                     createParticle(target.x + BALL_SIZE/2, target.y + BALL_SIZE/2, target.val > 0 ? '#ffb4be' : '#b4d2ff');
-                    target.el.remove();
-                    balls = balls.filter(b => b !== target);
+                    target.el.remove(); balls = balls.filter(b => b !== target);
                     selectedBalls = selectedBalls.filter(b => b !== target);
                 }
             }
-            score += 50;
-            scoreEl.innerText = score;
-            updateSumDisplay();
+            score += 50; scoreEl.innerText = score; updateSumDisplay();
         }, 120);
     }
 
@@ -444,13 +434,12 @@
         playSound(1000, 'sine', 0.5);
         createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#00dfff');
         setTimeout(() => {
-            ballObj.el.remove();
-            balls = balls.filter(b => b !== ballObj);
-            isFrozen = true;
-            if (freezeTimer) clearTimeout(freezeTimer);
+            ballObj.el.remove(); balls = balls.filter(b => b !== ballObj);
+            isFrozen = true; if (freezeTimer) clearTimeout(freezeTimer);
             freezeTimer = setTimeout(() => { isFrozen = false; }, 5000);
         }, 120);
     }
+
     function activateFog(ballObj) { playSound(150, 'sine', 0.8); ballObj.el.remove(); balls = balls.filter(b => b !== ballObj); isFoggy = true; balls.forEach(b => updateBallText(b.el, b.val, b.type)); if(fogTimer) clearTimeout(fogTimer); fogTimer = setTimeout(() => { isFoggy = false; balls.forEach(b => updateBallText(b.el, b.val, b.type)); }, 3000); }
 
     function update(time) {
@@ -458,46 +447,24 @@
         if (isFever) { let remaining = feverEndTime - Date.now(); feverGauge = (remaining / FEVER_DURATION) * 100; feverBar.style.width = feverGauge + '%'; if (remaining <= 0) endFever(); }
         if (time - lastSpawn > (isFever ? spawnRate/2 : spawnRate)) { createBall(); lastSpawn = time; }
         let nearDeadLine = false;
-
         for (let i = balls.length - 1; i >= 0; i--) {
             let b1 = balls[i]; if (b1.isMelting) continue;
+            let moveStep = isFrozen ? b1.speed * 0.2 : b1.speed;
+            b1.y += moveStep; b1.x += b1.vx;
             
-            let currentVy = isFrozen ? b1.vy * 0.2 : b1.vy;
-            let currentVx = isFrozen ? b1.vx * 0.2 : b1.vx;
+            // 4. 가로 반사 범위를 현재 너비에 맞게 유동적 수정
+            if (b1.x < 0 || b1.x > screens.outer.clientWidth - BALL_SIZE) b1.vx *= -1;
             
-            b1.y += currentVy;
-            b1.x += currentVx;
-            
-            if (b1.x < 0) { b1.x = 0; b1.vx *= -1; } 
-            else if (b1.x > 450 - BALL_SIZE) { b1.x = 450 - BALL_SIZE; b1.vx *= -1; }
-
             for (let j = 0; j < balls.length; j++) {
                 let b2 = balls[j]; if (i === j || b2.isMelting) continue;
                 let dx = b2.x - b1.x, dy = b2.y - b1.y, dist = Math.sqrt(dx*dx+dy*dy);
-                
                 if (dist < BALL_SIZE) {
-                    let angle = Math.atan2(dy, dx);
-                    let overlap = (BALL_SIZE - dist) / 2;
-                    b1.x -= Math.cos(angle) * overlap; b1.y -= Math.sin(angle) * overlap;
-                    b2.x += Math.cos(angle) * overlap; b2.y += Math.sin(angle) * overlap;
-
-                    let nx = dx / dist, ny = dy / dist;
-                    let p = 2 * (b1.vx * nx + b1.vy * ny - b2.vx * nx - b2.vy * ny) / 2;
-                    
-                    b1.vx = (b1.vx - p * nx) * 0.8; 
-                    b1.vy = (b1.vy - p * ny) * 0.8;
-                    b2.vx = (b2.vx + p * nx) * 0.8;
-                    b2.vy = (b2.vy + p * ny) * 0.8;
-                    
-                    b1.vy = Math.max(b1.vy, currentVy * 0.5);
-                    b2.vy = Math.max(b2.vy, (isFrozen ? b2.vy * 0.2 : b2.vy) * 0.5);
+                    let angle = Math.atan2(dy, dx), push = (BALL_SIZE - dist) * 0.05;
+                    b1.x -= Math.cos(angle) * push; b1.y -= Math.sin(angle) * push;
+                    b2.x += Math.cos(angle) * push; b2.y += Math.sin(angle) * push;
                 }
             }
-
-            // 떨림 방지 및 선택 시 확대 효과 적용
-            let scale = b1.isSelected ? 1.15 : 1.0;
-            b1.el.style.transform = `translate(${Math.round(b1.x)}px, ${Math.round(b1.y)}px) scale(${scale})`;
-            
+            b1.el.style.top = b1.y + 'px'; b1.el.style.left = b1.x + 'px';
             if (b1.y >= DEAD_LINE_Y - 5) {
                 b1.isMelting = true; b1.el.classList.add('melting');
                 if (b1.type === 'normal' || b1.type === 'heavy') { gameActive = false; playSound(150, 'sawtooth', 0.5); setTimeout(() => gameOver(), 600); return; }
