@@ -2,16 +2,13 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZERO SUM - Soft Glass & Ranking</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+KR:wght@400;700&display=swap');
 
-        * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: #000; color: white; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
-        
-        /* 화면 크기에 맞게 자동 조절되는 컨테이너 */
-        #game-outer { position: relative; width: 100%; height: 100%; max-width: 500px; background: #0f0f0f; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1); transition: background 0.3s; }
+        body { margin: 0; background: #000; color: white; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #game-outer { position: relative; width: 450px; height: 750px; background: #0f0f0f; border: 4px solid #222; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1); transition: background 0.3s; }
 
         .layer { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.5s ease-in-out; }
 
@@ -20,59 +17,95 @@
 
         #home-screen { background: radial-gradient(circle, #1a1a1a, #000); z-index: 2000; opacity: 0; pointer-events: none; }
         #home-screen.active { opacity: 1; pointer-events: auto; }
-        .game-title { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin-bottom: 5px; }
+        .game-title { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin-bottom: 5px; }
         
-        .nickname-input { background: rgba(255,255,255,0.1); border: 1px solid #00ffcc; border-radius: 5px; color: #fff; padding: 12px; text-align: center; font-family: 'Orbitron'; margin-bottom: 20px; outline: none; width: 220px; font-size: 1rem; }
+        .nickname-input { background: rgba(255,255,255,0.1); border: 1px solid #00ffcc; border-radius: 5px; color: #fff; padding: 10px; text-align: center; font-family: 'Orbitron'; margin-bottom: 20px; outline: none; width: 200px; }
 
-        #billboard { width: 80%; max-width: 300px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 30px; cursor: pointer; transition: 0.3s; }
+        #billboard { width: 280px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; cursor: pointer; transition: 0.3s; }
         #billboard:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
         .ranking-title { font-family: 'Orbitron'; font-size: 1rem; color: #00ffcc; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .ranking-list { list-style: none; padding: 0; margin: 0; font-family: 'Orbitron'; font-size: 0.9rem; }
         .ranking-item { display: flex; justify-content: space-between; padding: 3px 0; color: #ccc; }
         .ranking-item.top { color: #ffd700; font-weight: bold; }
 
-        #rank-popup { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        #rank-popup { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
         #rank-popup.active { opacity: 1; pointer-events: auto; }
-        .rank-box { background: #111; border: 2px solid #00ffcc; width: 85%; max-height: 70%; border-radius: 20px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .full-rank-list { list-style: none; padding: 0; width: 100%; }
-        .full-rank-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-family: 'Orbitron'; color: #eee; }
+        .rank-box { 
+            background: #111; border: 2px solid #00ffcc; padding: 25px; border-radius: 20px; 
+            width: 80%; max-height: 70%; overflow-y: auto;
+            transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #rank-popup.active .rank-box { transform: scale(1); }
 
         .btn-group { display: flex; flex-direction: column; gap: 10px; width: 220px; }
-        .main-btn { padding: 15px; font-size: 1.1rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 50px; font-weight: bold; transition: 0.3s; font-family: 'Orbitron', sans-serif; outline: none; }
-        .main-btn:active { background: #00ffcc; color: #000; }
+        .main-btn { padding: 12px; font-size: 1.1rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 50px; font-weight: bold; transition: 0.3s; font-family: 'Orbitron', sans-serif; outline: none; }
+        .main-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
 
-        #howto-popup { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        #howto-popup { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
         #howto-popup.active { opacity: 1; pointer-events: auto; }
-        .howto-box { background: #222; border: 2px solid #00ffcc; padding: 40px 30px; border-radius: 20px; width: 80%; }
-        .howto-box p { font-size: 1.1rem; line-height: 1.8; color: #fff; margin-bottom: 30px; word-break: keep-all; }
+        .howto-box { 
+            background: #222; border: 2px solid #00ffcc; padding: 40px 30px; border-radius: 20px; 
+            box-shadow: 0 0 30px rgba(0,255,204,0.2); transform: translateY(20px); transition: transform 0.4s ease;
+            width: 80%;
+        }
+        #howto-popup.active .howto-box { transform: translateY(0); }
+        .howto-box p { font-size: 1.1rem; line-height: 1.8; color: #fff; margin-bottom: 30px; word-break: keep-all; font-weight: 500; }
 
-        #game-ui { position: absolute; top: 0; width: 100%; height: 85px; background: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; z-index: 1500; transform: translateY(-100%); transition: 0.5s; padding: 5px 20px; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #game-ui { position: absolute; top: 0; width: 100%; height: 75px; background: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; z-index: 1500; transform: translateY(-100%); transition: 0.5s; padding: 5px 15px; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #game-ui.active { transform: translateY(0); }
         
-        .ui-top { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; }
+        .ui-top { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
         #fever-bar-container { width: 100%; height: 10px; background: #111; border-radius: 5px; overflow: hidden; border: 1px solid #444; }
         #fever-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ff99ff, #99ffff); transition: width 0.1s linear; }
 
         #game-container { position: relative; width: 100%; height: 100%; background: transparent; overflow: hidden; }
         
         .pause-btn-group { display: flex; gap: 8px; align-items: center; }
-        .pause-btn-style { cursor: pointer; background: none; border: 1px solid #777; color: #fff; border-radius: 4px; padding: 4px 8px; font-family: 'Orbitron'; font-size: 0.7rem; }
-        #home-btn { display: none; border-color: #ff4444; color: #ff4444; }
+        .pause-btn-style { cursor: pointer; background: none; border: 1px solid #777; color: #fff; border-radius: 4px; padding: 2px 0; width: 65px; text-align: center; font-family: 'Orbitron'; font-size: 0.7rem; }
+        #home-btn { display: none; border-color: #ff4444; color: #ff4444; width: 55px; }
 
         .ball { 
-            position: absolute; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; cursor: pointer; user-select: none; font-size: 1.2rem; z-index: 5; box-sizing: border-box; transition: transform 0.1s;
+            position: absolute; width: 52px; height: 52px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; cursor: pointer; user-select: none; font-size: 1.2rem; z-index: 5; box-sizing: border-box;
             backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: inset -5px -5px 12px rgba(0,0,0,0.2), inset 5px 5px 12px rgba(255,255,255,0.4), 0 8px 15px rgba(0,0,0,0.3);
             color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            /* 떨림 방지를 위해 transform만 transition 설정 */
+            transition: transform 0.1s ease-out, opacity 0.5s ease;
+            will-change: transform;
+            top: 0; left: 0;
         }
-        .ball.selected { transform: scale(1.2); z-index: 100 !important; box-shadow: 0 0 25px rgba(255,255,255,0.6), inset 0 0 10px rgba(255,255,255,0.5); border: 3px solid #fff; }
-        .melting { transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease !important; transform: translateY(60px) scaleY(0.1) scaleX(1.3) !important; opacity: 0 !important; pointer-events: none !important; }
+        /* 선택 효과 복구: 겉 부분이 더 빛나도록 shadow와 border 강화 */
+        .ball.selected { 
+            z-index: 100 !important; 
+            box-shadow: 0 0 30px rgba(255,255,255,0.8), inset 0 0 15px rgba(255,255,255,0.6); 
+            border: 3px solid #fff !important; 
+        }
         
-        .dead-line { position: absolute; bottom: 0; width: 100%; height: 15px; background: linear-gradient(to top, rgba(255, 68, 68, 0.5), transparent); z-index: 10; }
+        .ball.gold { background: radial-gradient(circle at 30% 30%, rgba(255, 245, 180, 0.6), rgba(255, 215, 0, 0.4)) !important; border-color: #ffd700; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .ball.bomb { background: radial-gradient(circle at 30% 30%, rgba(100, 100, 100, 0.6), rgba(20, 20, 20, 0.7)) !important; border-color: #ff6b6b; color: #ff6b6b; }
+        .ball.freeze { background: radial-gradient(circle at 30% 30%, rgba(200, 255, 255, 0.6), rgba(0, 223, 255, 0.4)) !important; border-color: #00dfff; }
+        .ball.heavy { background: radial-gradient(circle at 30% 30%, rgba(180, 150, 255, 0.6), rgba(75, 0, 130, 0.4)) !important; border-color: #b19cd9; animation: heavy-pulse 0.5s infinite alternate; }
+        .ball.fog { background: radial-gradient(circle at 30% 30%, rgba(150, 150, 150, 0.4), rgba(50, 50, 50, 0.4)) !important; color: #e0b0ff; border: 1px dashed #e0b0ff; }
+        .ball.lucky { border: 3px solid rgba(255, 215, 0, 0.8) !important; box-shadow: 0 0 20px rgba(255,215,0,0.4) !important; animation: lucky-glow 0.6s infinite alternate; }
+
+        .melting { transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease !important; transform: translateY(60px) scaleY(0.1) scaleX(1.3) !important; opacity: 0 !important; pointer-events: none !important; z-index: 1 !important; }
+        .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 100; }
+        #sum-display { font-size: 18px; font-weight: bold; font-family: 'Orbitron'; transition: 0.1s; }
+        .dead-line { position: absolute; bottom: 0; width: 100%; height: 10px; background: linear-gradient(to top, rgba(255, 68, 68, 0.5), transparent); z-index: 10; }
 
         @keyframes logo-fade { 0% { opacity: 0; transform: scale(0.8); } 40%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
-        .fever-active { animation: fever-bg 0.5s infinite alternate !important; }
+        @keyframes heavy-pulse { from { box-shadow: 0 0 5px #b19cd9; } to { box-shadow: 0 0 15px #ff4b5c; } }
+        @keyframes lucky-glow { from { transform: scale(1); } to { transform: scale(1.08); } }
         @keyframes fever-bg { from { background: #0f0f0f; } to { background: #1a0f1a; } }
+        .fever-active { animation: fever-bg 0.5s infinite alternate !important; }
         .warning-flash { animation: bg-flash 0.5s infinite alternate; }
         @keyframes bg-flash { from { background: #0f0f0f; } to { background: #2a1515; } }
     </style>
@@ -85,10 +118,10 @@
     <div id="home-screen" class="layer">
         <div class="game-title">ZERO SUM</div>
         
-        <div id="billboard" onclick="showRankPopup(true)">
+        <div id="billboard" onclick="showFullRank(true)">
             <div class="ranking-title">GLOBAL RANKING</div>
             <ul class="ranking-list" id="rank-list"></ul>
-            <div style="font-size:0.6rem; text-align:center; margin-top:5px; opacity:0.5;">CLICK TO VIEW ALL</div>
+            <div style="font-size: 0.6rem; text-align: center; color: #555; margin-top: 5px;">CLICK TO VIEW ALL</div>
         </div>
 
         <input type="text" id="player-name" class="nickname-input" placeholder="ENTER NICKNAME" maxlength="10">
@@ -101,23 +134,23 @@
 
     <div id="rank-popup">
         <div class="rank-box">
-            <div class="ranking-title" style="font-size:1.5rem; margin-bottom:20px;">RANKING HALL</div>
-            <ul class="full-rank-list" id="full-rank-list"></ul>
+            <div class="ranking-title">ALL TIME RANKING</div>
+            <ul class="ranking-list" id="full-rank-list"></ul>
+            <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem; margin-top:20px;" onclick="showFullRank(false)">CLOSE</button></center>
         </div>
-        <button class="main-btn" style="width:120px; margin-top:20px;" onclick="showRankPopup(false)">CLOSE</button>
     </div>
 
     <div id="howto-popup">
         <div class="howto-box">
             <p>합을 0으로 만드세요.<br>바닥에 닿으면 끝납니다.</p>
-            <center><button class="main-btn" style="width:120px; padding:10px;" onclick="showHowTo(false)">OK</button></center>
+            <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem;" onclick="showHowTo(false)">OK</button></center>
         </div>
     </div>
 
     <div id="game-ui">
         <div class="ui-top">
-            <div style="font-family:'Orbitron'; font-size: 0.9rem;">SC: <span id="score">0</span></div>
-            <div id="sum-display" style="font-family:'Orbitron'; font-size: 1rem; font-weight: bold;">SUM: 0</div>
+            <div style="font-family:'Orbitron'; font-size: 0.8rem;">SC: <span id="score">0</span></div>
+            <div id="sum-display">SUM: 0</div>
             <div class="pause-btn-group">
                 <button id="home-btn" onclick="quitToHome()" class="pause-btn-style">HOME</button>
                 <button id="pauseBtn" onclick="togglePause()" class="pause-btn-style">PAUSE</button>
@@ -146,13 +179,9 @@
     let score = 0, selectedBalls = [], balls = [], gameActive = false, isPaused = false;
     let baseSpeed = 0.3, spawnRate = 1600, lastSpawn = 0, combo = 0, lastPopTime = 0;
     let isFrozen = false, isFoggy = false, freezeTimer = null, fogTimer = null;
-    let feverGauge = 0, isFever = false, feverEndTime = 0;
     
-    const FEVER_MAX = 100, FEVER_DURATION = 5000, BALL_SIZE = 56, COMBO_TIMEOUT = 3000;
-    let deadLineY = 0;
-
-    window.addEventListener('resize', () => { deadLineY = container.clientHeight - 15; });
-    deadLineY = container.clientHeight || 750 - 15;
+    let feverGauge = 0, isFever = false, feverEndTime = 0;
+    const FEVER_MAX = 100, FEVER_DURATION = 5000, BALL_SIZE = 52, DEAD_LINE_Y = 750 - 75, COMBO_TIMEOUT = 3000;
 
     let playerName = localStorage.getItem('zeroSumNick') || "";
     screens.nameInput.value = playerName;
@@ -160,21 +189,14 @@
 
     setTimeout(() => { screens.logo.style.display = 'none'; screens.home.classList.add('active'); }, 2500);
 
-    function showHowTo(on) { if(on) { screens.howto.classList.add('active'); } else { screens.howto.classList.remove('active'); } }
+    function showHowTo(on) { 
+        if(on) { screens.howto.classList.add('active'); playSound(500, 'sine', 0.1); } 
+        else { screens.howto.classList.remove('active'); }
+    }
 
-    function showRankPopup(on) {
-        if(on) {
-            const ranks = cleanAndGetRanks();
-            screens.fullRankList.innerHTML = ranks.length ? "" : "<li style='text-align:center; padding:20px; opacity:0.5;'>NO DATA</li>";
-            ranks.forEach((data, idx) => {
-                const li = document.createElement('li');
-                li.className = 'full-rank-item';
-                li.innerHTML = `<span>${idx + 1}. ${data.name}</span> <span>${data.score}</span>`;
-                if(idx < 3) li.style.color = idx === 0 ? '#ffd700' : (idx === 1 ? '#c0c0c0' : '#cd7f32');
-                screens.fullRankList.appendChild(li);
-            });
-            screens.rankPopup.classList.add('active');
-        } else { screens.rankPopup.classList.remove('active'); }
+    function showFullRank(on) {
+        if(on) { screens.rankPopup.classList.add('active'); playSound(400, 'sine', 0.1); }
+        else { screens.rankPopup.classList.remove('active'); }
     }
     
     function goToGame() { 
@@ -182,28 +204,14 @@
         localStorage.setItem('zeroSumNick', playerName);
         screens.home.classList.remove('active'); 
         screens.ui.classList.add('active'); 
-        deadLineY = container.clientHeight - 15;
         if (audioCtx.state === 'suspended') audioCtx.resume(); 
         resetGame(); 
         gameActive = true; 
         requestAnimationFrame(update); 
     }
 
-    function cleanAndGetRanks() {
-        let rawRanks = JSON.parse(localStorage.getItem('zeroSumRanks')) || [];
-        let cleanedMap = new Map();
-        rawRanks.forEach(r => {
-            const nameKey = r.name.trim();
-            if (!cleanedMap.has(nameKey) || r.score > cleanedMap.get(nameKey)) { cleanedMap.set(nameKey, r.score); }
-        });
-        let cleanedRanks = Array.from(cleanedMap, ([name, score]) => ({ name, score }));
-        cleanedRanks.sort((a, b) => b.score - a.score);
-        localStorage.setItem('zeroSumRanks', JSON.stringify(cleanedRanks));
-        return cleanedRanks;
-    }
-
     function updateBillboard() {
-        const ranks = cleanAndGetRanks();
+        let ranks = JSON.parse(localStorage.getItem('zeroSumRanks')) || [];
         screens.rankList.innerHTML = ranks.length ? "" : "<li style='text-align:center; opacity:0.5;'>NO DATA</li>";
         ranks.slice(0, 3).forEach((data, idx) => {
             const li = document.createElement('li');
@@ -211,12 +219,28 @@
             li.innerHTML = `<span>${idx + 1}. ${data.name}</span> <span>${data.score}</span>`;
             screens.rankList.appendChild(li);
         });
+
+        screens.fullRankList.innerHTML = ranks.length ? "" : "<li style='text-align:center; opacity:0.5;'>NO DATA</li>";
+        ranks.slice(0, 10).forEach((data, idx) => {
+            const li = document.createElement('li');
+            li.className = `ranking-item ${idx === 0 ? 'top' : ''}`;
+            li.innerHTML = `<span>${idx + 1}. ${data.name}</span> <span>${data.score}</span>`;
+            screens.fullRankList.appendChild(li);
+        });
     }
 
     function saveScore(finalScore) {
         if (finalScore <= 0) return;
         let ranks = JSON.parse(localStorage.getItem('zeroSumRanks')) || [];
-        ranks.push({ name: playerName, score: finalScore });
+        const existing = ranks.find(r => r.name === playerName);
+        if (existing) {
+            if (finalScore > existing.score) existing.score = finalScore;
+            else return;
+        } else {
+            ranks.push({ name: playerName, score: finalScore });
+        }
+        ranks.sort((a, b) => b.score - a.score);
+        ranks = ranks.slice(0, 10);
         localStorage.setItem('zeroSumRanks', JSON.stringify(ranks));
         updateBillboard();
     }
@@ -233,16 +257,18 @@
     }
 
     function createParticle(x, y, color) {
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
             const p = document.createElement('div');
-            p.style.cssText = `position:absolute; width:6px; height:6px; border-radius:50%; background:${color}; pointer-events:none; z-index:100; left:${x}px; top:${y}px;`;
+            p.className = 'particle'; p.style.backgroundColor = color;
+            p.style.left = x + 'px'; p.style.top = y + 'px';
             container.appendChild(p);
-            const angle = Math.random() * Math.PI * 2, velocity = 2 + Math.random() * 3;
-            let px = x, py = y, vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity, op = 1;
+            const angle = Math.random() * Math.PI * 2, velocity = 2 + Math.random() * 4;
+            let px = x, py = y, vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
             const pAnim = () => {
-                px += vx; py += vy; op -= 0.03;
-                p.style.left = px + 'px'; p.style.top = py + 'px'; p.style.opacity = op;
-                if (op > 0) requestAnimationFrame(pAnim); else p.remove();
+                vx *= 0.95; vy *= 0.95; px += vx; py += vy;
+                p.style.left = px + 'px'; p.style.top = py + 'px';
+                p.style.opacity = parseFloat(p.style.opacity || 1) - 0.02;
+                if (parseFloat(p.style.opacity) > 0) requestAnimationFrame(pAnim); else p.remove();
             };
             requestAnimationFrame(pAnim);
         }
@@ -250,7 +276,11 @@
 
     function getRandomValue() {
         const range = Math.min(15, 7 + Math.floor(score / 3000));
-        let val = Math.floor(Math.random() * (range * 2 + 1)) - range;
+        const fieldSum = balls.reduce((s, b) => s + (typeof b.val === 'number' ? b.val : 0), 0);
+        let val;
+        if (fieldSum < -8 && Math.random() < 0.7) val = Math.floor(Math.random() * range) + 1;
+        else if (fieldSum > 8 && Math.random() < 0.7) val = Math.floor(Math.random() * range) - range;
+        else val = Math.floor(Math.random() * (range * 2 + 1)) - range;
         return val === 0 ? getRandomValue() : val;
     }
 
@@ -260,40 +290,41 @@
         if (rand < 0.015) type = 'gold';
         else if (rand < 0.03) type = 'bomb';
         else if (rand < 0.045) type = 'freeze';
-        else if (rand < 0.07) type = 'heavy';
-        else if (rand < 0.1) type = 'fog';
+        else if (rand < 0.075) type = 'heavy';
+        else if (rand < 0.105) type = 'fog';
         
         if (type === 'normal' || type === 'heavy') {
             if (Math.random() < 0.07) isLucky = true; 
             val = getRandomValue();
-        } else { val = type === 'gold' ? '★' : (type === 'bomb' ? 'B' : (type === 'freeze' ? 'F' : '?')); }
+        } else {
+            val = type === 'gold' ? '★' : (type === 'bomb' ? 'B' : (type === 'freeze' ? 'F' : '?'));
+        }
 
         const ball = document.createElement('div'); 
         ball.className = `ball ${type} ${isLucky ? 'lucky' : ''}`; 
-        let cv = (isFever && (type === 'normal' || type === 'heavy')) ? (val > 0 ? 1 : -1) : val;
+        
+        let currentDisplayVal = (isFever && (type === 'normal' || type === 'heavy')) ? (val > 0 ? 1 : -1) : val;
 
         const ballObj = { 
-            el: ball, val: cv, originalVal: val, type: type, isLucky: isLucky, 
-            x: Math.random() * (container.clientWidth - BALL_SIZE), y: -60, vx: (Math.random()-0.5)*0.5, 
-            speed: (baseSpeed + (score / 5000)) * (type === 'heavy' ? 1.6 : 1.0) + Math.random()*0.3, isMelting: false 
+            el: ball, val: currentDisplayVal, originalVal: val, type: type, isLucky: isLucky, 
+            x: Math.random() * (450 - BALL_SIZE), y: -60, vx: (Math.random()-0.5)*0.3, vy: (baseSpeed + (score / 4000)) * (type === 'heavy' ? 1.7 : 1.0) + Math.random()*0.2,
+            speed: 0, isMelting: false, isSelected: false
         };
         
         updateBallText(ball, ballObj.val, type);
         setBallColor(ball, ballObj.val, type, isLucky);
         container.appendChild(ball); balls.push(ballObj);
-        ball.addEventListener('touchstart', (e) => { e.preventDefault(); if(!ballObj.isMelting) toggleSelect(ballObj); });
-        ball.addEventListener('mousedown', (e) => { if(!ballObj.isMelting) toggleSelect(ballObj); });
+        ball.onmousedown = (e) => { e.preventDefault(); if(!ballObj.isMelting) toggleSelect(ballObj); };
     }
 
     function setBallColor(el, val, type, isLucky) {
         if (type === 'normal' || type === 'heavy') {
-            if (isLucky) el.style.background = "radial-gradient(circle at 30% 30%, #fff5b4, #daa520)";
-            else if (val > 0) el.style.background = "radial-gradient(circle at 30% 30%, #ffb4be, #ff6478)";
-            else el.style.background = "radial-gradient(circle at 30% 30%, #b4d2ff, #6496ff)";
-        } else if (type === 'gold') el.style.background = "radial-gradient(circle at 30% 30%, #fff5b4, #ffd700)";
-        else if (type === 'bomb') el.style.background = "radial-gradient(circle at 30% 30%, #646464, #141414)";
-        else if (type === 'freeze') el.style.background = "radial-gradient(circle at 30% 30%, #c8ffff, #00dfff)";
-        else if (type === 'fog') el.style.background = "radial-gradient(circle at 30% 30%, #969696, #323232)";
+            if (isLucky) el.style.background = "radial-gradient(circle at 30% 30%, rgba(255, 235, 150, 0.6), rgba(218, 165, 32, 0.4))";
+            else {
+                if (val > 0) { el.style.background = "radial-gradient(circle at 30% 30%, rgba(255, 180, 190, 0.6), rgba(255, 100, 120, 0.4))"; el.style.borderColor = "rgba(255, 150, 160, 0.5)"; }
+                else { el.style.background = "radial-gradient(circle at 30% 30%, rgba(180, 210, 255, 0.6), rgba(100, 150, 255, 0.4))"; el.style.borderColor = "rgba(150, 180, 255, 0.5)"; }
+            }
+        }
     }
 
     function updateBallText(el, val, type) {
@@ -308,15 +339,27 @@
         if (ballObj.type === 'freeze') { activateFreeze(ballObj); return; }
         if (ballObj.type === 'fog') { activateFog(ballObj); return; }
 
-        if (selectedBalls.includes(ballObj)) { selectedBalls = selectedBalls.filter(b => b !== ballObj); ballObj.el.classList.remove('selected'); playSound(300, 'sine', 0.1); }
-        else { selectedBalls.push(ballObj); ballObj.el.classList.add('selected'); playSound(600, 'sine', 0.1); }
+        if (ballObj.isSelected) { 
+            selectedBalls = selectedBalls.filter(b => b !== ballObj); 
+            ballObj.el.classList.remove('selected'); 
+            ballObj.isSelected = false;
+            playSound(300, 'sine', 0.1); 
+        }
+        else { 
+            selectedBalls.push(ballObj); 
+            ballObj.el.classList.add('selected'); 
+            ballObj.isSelected = true;
+            playSound(600, 'sine', 0.1); 
+        }
         updateSumDisplay();
     }
 
     function updateSumDisplay() {
         const sum = selectedBalls.reduce((s, b) => s + b.val, 0);
         sumEl.innerText = `SUM: ${selectedBalls.length === 0 ? 0 : sum}`;
-        sumEl.style.color = selectedBalls.length > 0 ? (sum === 0 ? "#00ffcc" : (sum > 0 ? "#ffb4be" : "#b4d2ff")) : "#00ffcc";
+        if (selectedBalls.length > 0) {
+            sumEl.style.color = sum > 0 ? "#ffb4be" : (sum < 0 ? "#b4d2ff" : "#00ffcc");
+        } else { sumEl.style.color = "#00ffcc"; }
         if (selectedBalls.length > 0 && sum === 0) popBalls();
     }
 
@@ -332,6 +375,8 @@
                 feverBar.style.width = feverGauge + '%';
                 if (feverGauge >= FEVER_MAX) startFever();
             }
+            const lastB = selectedBalls[selectedBalls.length - 1];
+            if (combo > 1) showComboUI(combo, lastB.x, lastB.y);
             selectedBalls.forEach(b => {
                 createParticle(b.x + BALL_SIZE/2, b.y + BALL_SIZE/2, b.isLucky ? '#ffd700' : (b.val > 0 ? '#ffb4be' : '#b4d2ff'));
                 b.el.remove(); balls = balls.filter(allB => allB !== b);
@@ -356,6 +401,15 @@
         selectedBalls = []; updateSumDisplay();
     }
 
+    function showComboUI(count, x, y) {
+        const comboText = document.createElement('div');
+        comboText.innerText = `${count} COMBO!`;
+        comboText.style.cssText = `position: absolute; left: ${x}px; top: ${y}px; font-family: 'Orbitron'; font-size: 1.8rem; color: #00ffcc; font-weight: 900; pointer-events: none; z-index: 2000; text-shadow: 0 0 10px #00ffcc; transition: all 0.8s ease-out;`;
+        container.appendChild(comboText);
+        setTimeout(() => { comboText.style.transform = 'translateY(-60px) scale(1.3)'; comboText.style.opacity = '0'; }, 50);
+        setTimeout(() => comboText.remove(), 850);
+    }
+
     function activateGold(ballObj) {
         playSound(800, 'square', 0.2); createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#ffd700');
         ballObj.el.remove(); balls = balls.filter(b => b !== ballObj);
@@ -364,58 +418,114 @@
     }
 
     function activateBomb(ballObj) {
-        playSound(200, 'sawtooth', 0.3); createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#ff6b6b');
-        ballObj.el.remove(); balls = balls.filter(b => b !== ballObj);
-        for(let i = 0; i < 3; i++) {
-            if(balls.length > 0) {
-                const target = balls[Math.floor(Math.random() * balls.length)];
-                createParticle(target.x + BALL_SIZE/2, target.y + BALL_SIZE/2, '#ff6b6b');
-                target.el.remove(); balls = balls.filter(b => b !== target);
-                selectedBalls = selectedBalls.filter(b => b !== target);
+        ballObj.el.classList.add('selected');
+        playSound(200, 'sawtooth', 0.3);
+        createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#ff6b6b');
+        setTimeout(() => {
+            ballObj.el.remove();
+            balls = balls.filter(b => b !== ballObj);
+            for(let i = 0; i < 3; i++) {
+                if(balls.length > 0) {
+                    const target = balls[Math.floor(Math.random() * balls.length)];
+                    createParticle(target.x + BALL_SIZE/2, target.y + BALL_SIZE/2, target.val > 0 ? '#ffb4be' : '#b4d2ff');
+                    target.el.remove();
+                    balls = balls.filter(b => b !== target);
+                    selectedBalls = selectedBalls.filter(b => b !== target);
+                }
             }
-        }
-        score += 50; scoreEl.innerText = score; updateSumDisplay();
+            score += 50;
+            scoreEl.innerText = score;
+            updateSumDisplay();
+        }, 120);
     }
 
-    function activateFreeze() { isFrozen = true; if (freezeTimer) clearTimeout(freezeTimer); freezeTimer = setTimeout(() => isFrozen = false, 5000); }
-    function activateFog() { isFoggy = true; balls.forEach(b => updateBallText(b.el, b.val, b.type)); if(fogTimer) clearTimeout(fogTimer); fogTimer = setTimeout(() => { isFoggy = false; balls.forEach(b => updateBallText(b.el, b.val, b.type)); }, 3000); }
+    function activateFreeze(ballObj) {
+        ballObj.el.classList.add('selected');
+        playSound(1000, 'sine', 0.5);
+        createParticle(ballObj.x + BALL_SIZE/2, ballObj.y + BALL_SIZE/2, '#00dfff');
+        setTimeout(() => {
+            ballObj.el.remove();
+            balls = balls.filter(b => b !== ballObj);
+            isFrozen = true;
+            if (freezeTimer) clearTimeout(freezeTimer);
+            freezeTimer = setTimeout(() => { isFrozen = false; }, 5000);
+        }, 120);
+    }
+    function activateFog(ballObj) { playSound(150, 'sine', 0.8); ballObj.el.remove(); balls = balls.filter(b => b !== ballObj); isFoggy = true; balls.forEach(b => updateBallText(b.el, b.val, b.type)); if(fogTimer) clearTimeout(fogTimer); fogTimer = setTimeout(() => { isFoggy = false; balls.forEach(b => updateBallText(b.el, b.val, b.type)); }, 3000); }
 
     function update(time) {
         if (!gameActive || isPaused) return;
-        if (isFever) { let rem = feverEndTime - Date.now(); feverGauge = (rem / FEVER_DURATION) * 100; feverBar.style.width = feverGauge + '%'; if (rem <= 0) endFever(); }
+        if (isFever) { let remaining = feverEndTime - Date.now(); feverGauge = (remaining / FEVER_DURATION) * 100; feverBar.style.width = feverGauge + '%'; if (remaining <= 0) endFever(); }
         if (time - lastSpawn > (isFever ? spawnRate/2 : spawnRate)) { createBall(); lastSpawn = time; }
-        
-        let warning = false;
+        let nearDeadLine = false;
+
         for (let i = balls.length - 1; i >= 0; i--) {
             let b1 = balls[i]; if (b1.isMelting) continue;
-            b1.y += isFrozen ? b1.speed * 0.2 : b1.speed; b1.x += b1.vx;
-            if (b1.x < 0 || b1.x > container.clientWidth - BALL_SIZE) b1.vx *= -1;
-            b1.el.style.transform = `translate(${b1.x}px, ${b1.y}px)`;
-            if (b1.y >= deadLineY - BALL_SIZE) {
-                b1.isMelting = true; b1.el.classList.add('melting');
-                if (b1.type === 'normal' || b1.type === 'heavy') { gameActive = false; setTimeout(gameOver, 600); return; }
-                else { setTimeout(() => { b1.el.remove(); balls = balls.filter(b => b !== b1); }, 600); }
+            
+            let currentVy = isFrozen ? b1.vy * 0.2 : b1.vy;
+            let currentVx = isFrozen ? b1.vx * 0.2 : b1.vx;
+            
+            b1.y += currentVy;
+            b1.x += currentVx;
+            
+            if (b1.x < 0) { b1.x = 0; b1.vx *= -1; } 
+            else if (b1.x > 450 - BALL_SIZE) { b1.x = 450 - BALL_SIZE; b1.vx *= -1; }
+
+            for (let j = 0; j < balls.length; j++) {
+                let b2 = balls[j]; if (i === j || b2.isMelting) continue;
+                let dx = b2.x - b1.x, dy = b2.y - b1.y, dist = Math.sqrt(dx*dx+dy*dy);
+                
+                if (dist < BALL_SIZE) {
+                    let angle = Math.atan2(dy, dx);
+                    let overlap = (BALL_SIZE - dist) / 2;
+                    b1.x -= Math.cos(angle) * overlap; b1.y -= Math.sin(angle) * overlap;
+                    b2.x += Math.cos(angle) * overlap; b2.y += Math.sin(angle) * overlap;
+
+                    let nx = dx / dist, ny = dy / dist;
+                    let p = 2 * (b1.vx * nx + b1.vy * ny - b2.vx * nx - b2.vy * ny) / 2;
+                    
+                    b1.vx = (b1.vx - p * nx) * 0.8; 
+                    b1.vy = (b1.vy - p * ny) * 0.8;
+                    b2.vx = (b2.vx + p * nx) * 0.8;
+                    b2.vy = (b2.vy + p * ny) * 0.8;
+                    
+                    b1.vy = Math.max(b1.vy, currentVy * 0.5);
+                    b2.vy = Math.max(b2.vy, (isFrozen ? b2.vy * 0.2 : b2.vy) * 0.5);
+                }
             }
-            if (b1.y > deadLineY - 150) warning = true;
+
+            // 떨림 방지 및 선택 시 확대 효과 적용
+            let scale = b1.isSelected ? 1.15 : 1.0;
+            b1.el.style.transform = `translate(${Math.round(b1.x)}px, ${Math.round(b1.y)}px) scale(${scale})`;
+            
+            if (b1.y >= DEAD_LINE_Y - 5) {
+                b1.isMelting = true; b1.el.classList.add('melting');
+                if (b1.type === 'normal' || b1.type === 'heavy') { gameActive = false; playSound(150, 'sawtooth', 0.5); setTimeout(() => gameOver(), 600); return; }
+                else { const targetBall = b1; setTimeout(() => { targetBall.el.remove(); balls = balls.filter(allB => allB !== targetBall); }, 600); }
+            }
+            if (b1.y > DEAD_LINE_Y - 100 && !b1.isMelting && (b1.type === 'normal' || b1.type === 'heavy')) nearDeadLine = true;
         }
-        if (warning) screens.outer.classList.add('warning-flash'); else screens.outer.classList.remove('warning-flash');
+        if (nearDeadLine) screens.outer.classList.add('warning-flash'); else screens.outer.classList.remove('warning-flash');
         requestAnimationFrame(update);
     }
 
     function togglePause() {
         isPaused = !isPaused;
-        document.getElementById('pauseBtn').innerText = isPaused ? "RESUME" : "PAUSE";
-        document.getElementById('home-btn').style.display = isPaused ? "block" : "none";
-        if (!isPaused) requestAnimationFrame(update);
+        const pauseBtn = document.getElementById('pauseBtn'), homeBtn = document.getElementById('home-btn');
+        if (isPaused) { pauseBtn.innerText = "RESUME"; homeBtn.style.display = "block"; if (isFever) feverEndTime -= Date.now(); }
+        else { pauseBtn.innerText = "PAUSE"; homeBtn.style.display = "none"; if (isFever) feverEndTime += Date.now(); requestAnimationFrame(update); }
     }
 
-    function quitToHome() { isPaused = false; gameOver(); }
-    function gameOver() { 
+    function quitToHome() { isPaused = false; document.getElementById('home-btn').style.display = "none"; document.getElementById('pauseBtn').innerText = "PAUSE"; gameOver(); }
+
+    function gameOver() {
         gameActive = false; screens.outer.classList.remove('warning-flash', 'fever-active');
-        saveScore(score); screens.ui.classList.remove('active');
+        saveScore(score);
+        screens.ui.classList.remove('active');
         setTimeout(() => { screens.home.classList.add('active'); balls.forEach(b => b.el.remove()); balls = []; }, 500);
     }
-    function resetGame() { balls.forEach(b => b.el.remove()); balls = []; selectedBalls = []; score = 0; scoreEl.innerText = '0'; feverGauge = 0; isFever = false; updateSumDisplay(); }
+
+    function resetGame() { container.querySelectorAll('.ball').forEach(el => el.remove()); balls = []; selectedBalls = []; score = 0; combo = 0; feverGauge = 0; scoreEl.innerText = '0'; feverBar.style.width = '0%'; isFever = false; spawnRate = 1600; isFrozen = false; isFoggy = false; updateSumDisplay(); }
 </script>
 </body>
 </html>
