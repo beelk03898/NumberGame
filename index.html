@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZERO SUM - Soft Glass & Ranking</title>
+    <title>ZERO SUM - Shop Update</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Noto+Sans+KR:wght@400;700&display=swap');
 
         body { margin: 0; background: #000; color: white; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        /* 1. 휴대폰 비율로 수정 */
         #game-outer { 
             position: relative; 
             width: 95vw; 
@@ -31,57 +30,68 @@
         #home-screen.active { opacity: 1; pointer-events: auto; }
         .game-title { font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin-bottom: 5px; }
         
+        .coin-display { font-family: 'Orbitron'; color: #ffd700; font-size: 1rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+
         .nickname-input { background: rgba(255,255,255,0.1); border: 1px solid #00ffcc; border-radius: 5px; color: #fff; padding: 10px; text-align: center; font-family: 'Orbitron'; margin-bottom: 20px; outline: none; width: 200px; }
 
-        #billboard { width: 280px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 30px; cursor: pointer; transition: 0.3s; }
+        #billboard { width: 280px; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 15px; cursor: pointer; transition: 0.3s; }
         #billboard:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
         .ranking-title { font-family: 'Orbitron'; font-size: 1rem; color: #00ffcc; margin-bottom: 10px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .ranking-list { list-style: none; padding: 0; margin: 0; font-family: 'Orbitron'; font-size: 0.9rem; }
         .ranking-item { display: flex; justify-content: space-between; padding: 3px 0; color: #ccc; }
         .ranking-item.top { color: #ffd700; font-weight: bold; }
 
-        #rank-popup { 
+        .popup-overlay { 
             position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
             opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
         }
-        #rank-popup.active { opacity: 1; pointer-events: auto; }
-        .rank-box { 
+        .popup-overlay.active { opacity: 1; pointer-events: auto; }
+        .popup-box { 
             background: #111; border: 2px solid #00ffcc; padding: 25px; border-radius: 20px; 
             width: 80%; height: 70%; display: flex; flex-direction: column;
         }
-        .full-rank-scroll { flex: 1; overflow-y: auto; margin: 15px 0; padding-right: 5px; }
-        .full-rank-scroll::-webkit-scrollbar { width: 4px; }
-        .full-rank-scroll::-webkit-scrollbar-thumb { background: #00ffcc; border-radius: 2px; }
 
-        .btn-group { display: flex; flex-direction: column; gap: 10px; width: 220px; }
-        .main-btn { padding: 12px; font-size: 1.1rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 50px; font-weight: bold; transition: 0.3s; font-family: 'Orbitron', sans-serif; outline: none; }
+        .shop-content { flex: 1; overflow-y: auto; margin: 15px 0; }
+        .shop-section { margin-bottom: 20px; }
+        .shop-section-title { font-family: 'Orbitron'; font-size: 0.8rem; color: #777; margin-bottom: 10px; border-left: 3px solid #00ffcc; padding-left: 8px; }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shop-item { 
+            background: #222; border: 1px solid #444; border-radius: 10px; padding: 10px; text-align: center; 
+            cursor: pointer; transition: 0.2s; position: relative;
+        }
+        .shop-item:hover { border-color: #00ffcc; background: #2a2a2a; }
+        .shop-item.selected { border-color: #00ffcc; background: rgba(0, 255, 204, 0.1); }
+        .shop-item-name { font-size: 0.7rem; font-family: 'Orbitron'; color: #fff; margin-bottom: 5px; }
+        .shop-item-price { font-size: 0.6rem; color: #ffd700; font-family: 'Orbitron'; }
+        .shop-item.selected .shop-item-price { color: #00ffcc; }
+        .shop-item.empty-slot { min-height: 60px; display: flex; flex-direction: column; justify-content: center; border: 1px dashed #444; }
+
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 220px; }
+        .main-btn { padding: 10px; font-size: 1rem; cursor: pointer; background: transparent; border: 2px solid #00ffcc; color: #00ffcc; border-radius: 50px; font-weight: bold; transition: 0.3s; font-family: 'Orbitron', sans-serif; outline: none; }
         .main-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
 
-        #howto-popup { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-        }
-        #howto-popup.active { opacity: 1; pointer-events: auto; }
-        .howto-box { 
+        #howto-popup .howto-box { 
             background: #222; border: 2px solid #00ffcc; padding: 40px 30px; border-radius: 20px; 
             box-shadow: 0 0 30px rgba(0,255,204,0.2); transform: translateY(20px); transition: transform 0.4s ease;
-            width: 80%;
+            width: 80%; text-align: center;
         }
         #howto-popup.active .howto-box { transform: translateY(0); }
-        .howto-box p { font-size: 1.1rem; line-height: 1.8; color: #fff; margin-bottom: 30px; word-break: keep-all; font-weight: 500; }
+        #howto-popup p { font-size: 1.1rem; line-height: 1.8; color: #fff; margin-bottom: 30px; word-break: keep-all; font-weight: 500; }
 
-        #game-ui { position: absolute; top: 0; width: 100%; height: 75px; background: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; z-index: 1500; transform: translateY(-100%); transition: 0.5s; padding: 5px 15px; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #game-ui { position: absolute; top: 0; width: 100%; height: 85px; background: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; z-index: 1500; transform: translateY(-100%); transition: 0.5s; padding: 5px 15px; box-sizing: border-box; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #game-ui.active { transform: translateY(0); }
         
-        .ui-top { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; }
+        .ui-top { display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; width: 100%; margin-bottom: 2px; }
+        .ui-mid { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; font-family: 'Orbitron'; font-size: 0.7rem; }
+        #sum-display { justify-self: center; font-size: 18px; font-weight: bold; font-family: 'Orbitron'; transition: 0.1s; white-space: nowrap; }
+        
         #fever-bar-container { width: 100%; height: 10px; background: #111; border-radius: 5px; overflow: hidden; border: 1px solid #444; }
         #fever-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ff99ff, #99ffff); transition: width 0.1s linear; }
 
         #game-container { position: relative; width: 100%; height: 100%; background: transparent; overflow: hidden; }
         
-        .pause-btn-group { display: flex; gap: 8px; align-items: center; }
+        .pause-btn-group { justify-self: end; display: flex; gap: 8px; align-items: center; }
         .pause-btn-style { cursor: pointer; background: none; border: 1px solid #777; color: #fff; border-radius: 4px; padding: 2px 0; width: 65px; text-align: center; font-family: 'Orbitron'; font-size: 0.7rem; }
         #home-btn { display: none; border-color: #ff4444; color: #ff4444; width: 55px; }
 
@@ -103,7 +113,7 @@
 
         .melting { transition: transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.5s ease !important; transform: translateY(60px) scaleY(0.1) scaleX(1.3) !important; opacity: 0 !important; pointer-events: none !important; z-index: 1 !important; }
         .particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 100; }
-        #sum-display { font-size: 18px; font-weight: bold; font-family: 'Orbitron'; transition: 0.1s; }
+        
         .dead-line { position: absolute; bottom: 0; width: 100%; height: 10px; background: linear-gradient(to top, rgba(255, 68, 68, 0.5), transparent); z-index: 10; }
 
         @keyframes logo-fade { 0% { opacity: 0; transform: scale(0.8); } 40%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
@@ -122,6 +132,7 @@
     
     <div id="home-screen" class="layer">
         <div class="game-title">ZERO SUM</div>
+        <div class="coin-display">🪙 <span id="home-coin">0</span></div>
         
         <div id="billboard" onclick="showFullRank(true)">
             <div class="ranking-title">TOP 3 RANKING</div>
@@ -133,12 +144,13 @@
 
         <div class="btn-group">
             <button class="main-btn" onclick="goToGame()">START GAME</button>
+            <button class="main-btn" onclick="showShop(true)">SHOP</button>
             <button class="main-btn" onclick="showHowTo(true)">HOW TO</button>
         </div>
     </div>
 
-    <div id="rank-popup">
-        <div class="rank-box">
+    <div id="rank-popup" class="popup-overlay">
+        <div class="popup-box">
             <div class="ranking-title">TOP 100 RANKING</div>
             <div class="full-rank-scroll">
                 <ul class="ranking-list" id="full-rank-list"></ul>
@@ -147,10 +159,45 @@
         </div>
     </div>
 
-    <div id="howto-popup">
+    <div id="howto-popup" class="popup-overlay">
         <div class="howto-box">
             <p>합을 0으로 만드세요.<br>바닥에 닿으면 끝납니다.</p>
             <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem;" onclick="showHowTo(false)">OK</button></center>
+        </div>
+    </div>
+
+    <div id="shop-popup" class="popup-overlay">
+        <div class="popup-box">
+            <div class="ranking-title">SHOP</div>
+            <div class="shop-content">
+                <div class="shop-section">
+                    <div class="shop-section-title">THEMES</div>
+                    <div class="shop-grid" id="theme-grid">
+                        <div class="shop-item selected" onclick="selectItem(this, 'theme')">
+                            <div class="shop-item-name">CLASSIC</div>
+                            <div class="shop-item-price">EQUIPPED</div>
+                        </div>
+                        <div class="shop-item" onclick="selectItem(this, 'theme')">
+                            <div class="shop-item-name">NEON NIGHT</div>
+                            <div class="shop-item-price">🪙 0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="shop-section">
+                    <div class="shop-section-title">BALL SKINS</div>
+                    <div class="shop-grid" id="skin-grid">
+                        <div class="shop-item empty-slot selected" onclick="selectItem(this, 'skin')">
+                            <div class="shop-item-name">GLASS</div>
+                            <div class="shop-item-price">EQUIPPED</div>
+                        </div>
+                        <div class="shop-item empty-slot" onclick="selectItem(this, 'skin')">
+                            <div class="shop-item-name">METAL</div>
+                            <div class="shop-item-price">🪙 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <center><button class="main-btn" style="width:120px; padding:10px; font-size:1.1rem;" onclick="showShop(false)">CLOSE</button></center>
         </div>
     </div>
 
@@ -163,8 +210,12 @@
                 <button id="pauseBtn" onclick="togglePause()" class="pause-btn-style">PAUSE</button>
             </div>
         </div>
+        <div class="ui-mid">
+            <div style="color:#ffd700;">🪙 <span id="game-coin">0</span></div>
+        </div>
         <div id="fever-bar-container"><div id="fever-bar"></div></div>
     </div>
+    
     <div id="game-container"><div class="dead-line"></div></div>
 </div>
 
@@ -175,6 +226,7 @@
         home: document.getElementById('home-screen'), 
         ui: document.getElementById('game-ui'), 
         howto: document.getElementById('howto-popup'),
+        shop: document.getElementById('shop-popup'),
         rankList: document.getElementById('rank-list'),
         fullRankList: document.getElementById('full-rank-list'),
         rankPopup: document.getElementById('rank-popup'),
@@ -183,24 +235,41 @@
     const scoreEl = document.getElementById('score'), sumEl = document.getElementById('sum-display'), 
           container = document.getElementById('game-container'), feverBar = document.getElementById('fever-bar');
     
+    const homeCoinEl = document.getElementById('home-coin');
+    const gameCoinEl = document.getElementById('game-coin');
+
     let score = 0, selectedBalls = [], balls = [], gameActive = false, isPaused = false;
     let baseSpeed = 0.3, spawnRate = 1600, lastSpawn = 0, combo = 0, lastPopTime = 0;
     let isFrozen = false, isFoggy = false, freezeTimer = null, fogTimer = null;
-    
     let feverGauge = 0, isFever = false, feverEndTime = 0;
     
-    // 2. 유동적 높이 계산을 위해 DEAD_LINE_Y 초기값만 설정
+    let totalCoins = parseInt(localStorage.getItem('zeroSumCoins')) || 0;
+
     const FEVER_MAX = 100, FEVER_DURATION = 5000, BALL_SIZE = 52, COMBO_TIMEOUT = 3000;
     let DEAD_LINE_Y = screens.outer.offsetHeight - 75;
 
-    // 화면 리사이즈 시 데드라인 재계산
     window.addEventListener('resize', () => { DEAD_LINE_Y = screens.outer.offsetHeight - 75; });
 
     let playerName = localStorage.getItem('zeroSumNick') || "";
     screens.nameInput.value = playerName;
     updateBillboard();
+    updateCoinUI();
 
     setTimeout(() => { screens.logo.style.display = 'none'; screens.home.classList.add('active'); }, 2500);
+
+    // 상점 아이템 선택 로직
+    function selectItem(el, type) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.shop-item').forEach(item => {
+            item.classList.remove('selected');
+            const priceTag = item.querySelector('.shop-item-price');
+            if(priceTag) priceTag.innerText = "🪙 0";
+        });
+        el.classList.add('selected');
+        const currentPriceTag = el.querySelector('.shop-item-price');
+        if(currentPriceTag) currentPriceTag.innerText = "EQUIPPED";
+        playSound(700, 'sine', 0.1);
+    }
 
     function showHowTo(on) { 
         if(on) { screens.howto.classList.add('active'); playSound(500, 'sine', 0.1); } 
@@ -210,6 +279,22 @@
     function showFullRank(on) {
         if(on) { screens.rankPopup.classList.add('active'); playSound(400, 'sine', 0.1); }
         else { screens.rankPopup.classList.remove('active'); }
+    }
+
+    function showShop(on) {
+        if(on) { screens.shop.classList.add('active'); playSound(600, 'sine', 0.1); }
+        else { screens.shop.classList.remove('active'); }
+    }
+
+    function updateCoinUI() {
+        homeCoinEl.innerText = totalCoins.toLocaleString();
+        gameCoinEl.innerText = totalCoins.toLocaleString();
+    }
+
+    function addCoins(amount) {
+        totalCoins += amount;
+        localStorage.setItem('zeroSumCoins', totalCoins);
+        updateCoinUI();
     }
     
     function goToGame() { 
@@ -244,9 +329,11 @@
     function saveScore(finalScore) {
         if (finalScore <= 0) return;
         let ranks = JSON.parse(localStorage.getItem('zeroSumRanks')) || [];
-        const existing = ranks.find(r => r.name === playerName);
-        if (existing) { if (finalScore > existing.score) existing.score = finalScore; else return; } 
-        else { ranks.push({ name: playerName, score: finalScore }); }
+        const existingIndex = ranks.findIndex(r => r.name === playerName);
+        if (existingIndex !== -1) {
+            if (finalScore > ranks[existingIndex].score) ranks[existingIndex].score = finalScore;
+            else return;
+        } else ranks.push({ name: playerName, score: finalScore });
         ranks.sort((a, b) => b.score - a.score);
         ranks = ranks.slice(0, 100);
         localStorage.setItem('zeroSumRanks', JSON.stringify(ranks));
@@ -300,26 +387,18 @@
         else if (rand < 0.045) type = 'freeze';
         else if (rand < 0.075) type = 'heavy';
         else if (rand < 0.105) type = 'fog';
-        
         if (type === 'normal' || type === 'heavy') {
             if (Math.random() < 0.07) isLucky = true; 
             val = getRandomValue();
-        } else {
-            val = type === 'gold' ? '★' : (type === 'bomb' ? 'B' : (type === 'freeze' ? 'F' : '?'));
-        }
-
+        } else val = type === 'gold' ? '★' : (type === 'bomb' ? 'B' : (type === 'freeze' ? 'F' : '?'));
         const ball = document.createElement('div'); 
         ball.className = `ball ${type} ${isLucky ? 'lucky' : ''}`; 
-        
         let currentDisplayVal = (isFever && (type === 'normal' || type === 'heavy')) ? (val > 0 ? 1 : -1) : val;
-
-        // 3. 공 생성 시 가로 범위를 현재 화면 너비에 맞게 계산
         const ballObj = { 
             el: ball, val: currentDisplayVal, originalVal: val, type: type, isLucky: isLucky, 
             x: Math.random() * (screens.outer.clientWidth - BALL_SIZE), y: -60, vx: (Math.random()-0.5)*0.3, 
             speed: (baseSpeed + (score / 4000)) * (type === 'heavy' ? 1.7 : 1.0) + Math.random()*0.2, isMelting: false 
         };
-        
         updateBallText(ball, ballObj.val, type);
         setBallColor(ball, ballObj.val, type, isLucky);
         container.appendChild(ball); balls.push(ballObj);
@@ -355,8 +434,8 @@
     function updateSumDisplay() {
         const sum = selectedBalls.reduce((s, b) => s + b.val, 0);
         sumEl.innerText = `SUM: ${selectedBalls.length === 0 ? 0 : sum}`;
-        if (selectedBalls.length > 0) { sumEl.style.color = sum > 0 ? "#ffb4be" : (sum < 0 ? "#b4d2ff" : "#00ffcc"); } 
-        else { sumEl.style.color = "#00ffcc"; }
+        if (selectedBalls.length > 0) sumEl.style.color = sum > 0 ? "#ffb4be" : (sum < 0 ? "#b4d2ff" : "#00ffcc");
+        else sumEl.style.color = "#00ffcc";
         if (selectedBalls.length > 0 && sum === 0) popBalls();
     }
 
@@ -367,6 +446,9 @@
         if (!isGold) {
             let hasLucky = selectedBalls.some(b => b.isLucky);
             score += (selectedBalls.length * 10) * combo * (hasLucky ? 5 : 1);
+            let coinEarned = selectedBalls.length * combo;
+            if(hasLucky) coinEarned *= 2;
+            addCoins(coinEarned);
             if (!isFever) {
                 feverGauge = Math.min(FEVER_MAX, feverGauge + selectedBalls.length * 5);
                 feverBar.style.width = feverGauge + '%';
@@ -376,7 +458,7 @@
             if (combo > 1) showComboUI(combo, lastB.x, lastB.y);
             selectedBalls.forEach(b => { createParticle(b.x + BALL_SIZE/2, b.y + BALL_SIZE/2, b.isLucky ? '#ffd700' : (b.val > 0 ? '#ffb4be' : '#b4d2ff')); b.el.remove(); balls = balls.filter(allB => allB !== b); });
             selectedBalls = []; 
-        } else { score += (selectedBalls.length + 1) * 20; }
+        } else { score += (selectedBalls.length + 1) * 20; addCoins(10); }
         scoreEl.innerText = score;
         updateSumDisplay();
     }
@@ -423,6 +505,7 @@
                     createParticle(target.x + BALL_SIZE/2, target.y + BALL_SIZE/2, target.val > 0 ? '#ffb4be' : '#b4d2ff');
                     target.el.remove(); balls = balls.filter(b => b !== target);
                     selectedBalls = selectedBalls.filter(b => b !== target);
+                    addCoins(2);
                 }
             }
             score += 50; scoreEl.innerText = score; updateSumDisplay();
@@ -437,10 +520,19 @@
             ballObj.el.remove(); balls = balls.filter(b => b !== ballObj);
             isFrozen = true; if (freezeTimer) clearTimeout(freezeTimer);
             freezeTimer = setTimeout(() => { isFrozen = false; }, 5000);
+            addCoins(5);
         }, 120);
     }
 
-    function activateFog(ballObj) { playSound(150, 'sine', 0.8); ballObj.el.remove(); balls = balls.filter(b => b !== ballObj); isFoggy = true; balls.forEach(b => updateBallText(b.el, b.val, b.type)); if(fogTimer) clearTimeout(fogTimer); fogTimer = setTimeout(() => { isFoggy = false; balls.forEach(b => updateBallText(b.el, b.val, b.type)); }, 3000); }
+    function activateFog(ballObj) { 
+        playSound(150, 'sine', 0.8); 
+        ballObj.el.remove(); balls = balls.filter(b => b !== ballObj); 
+        isFoggy = true; 
+        balls.forEach(b => updateBallText(b.el, b.val, b.type)); 
+        if(fogTimer) clearTimeout(fogTimer); 
+        fogTimer = setTimeout(() => { isFoggy = false; balls.forEach(b => updateBallText(b.el, b.val, b.type)); }, 3000); 
+        addCoins(5);
+    }
 
     function update(time) {
         if (!gameActive || isPaused) return;
@@ -451,10 +543,7 @@
             let b1 = balls[i]; if (b1.isMelting) continue;
             let moveStep = isFrozen ? b1.speed * 0.2 : b1.speed;
             b1.y += moveStep; b1.x += b1.vx;
-            
-            // 4. 가로 반사 범위를 현재 너비에 맞게 유동적 수정
             if (b1.x < 0 || b1.x > screens.outer.clientWidth - BALL_SIZE) b1.vx *= -1;
-            
             for (let j = 0; j < balls.length; j++) {
                 let b2 = balls[j]; if (i === j || b2.isMelting) continue;
                 let dx = b2.x - b1.x, dy = b2.y - b1.y, dist = Math.sqrt(dx*dx+dy*dy);
@@ -490,9 +579,10 @@
         saveScore(score);
         screens.ui.classList.remove('active');
         setTimeout(() => { screens.home.classList.add('active'); balls.forEach(b => b.el.remove()); balls = []; }, 500);
+        updateCoinUI();
     }
 
-    function resetGame() { container.querySelectorAll('.ball').forEach(el => el.remove()); balls = []; selectedBalls = []; score = 0; combo = 0; feverGauge = 0; scoreEl.innerText = '0'; feverBar.style.width = '0%'; isFever = false; spawnRate = 1600; isFrozen = false; isFoggy = false; updateSumDisplay(); }
+    function resetGame() { container.querySelectorAll('.ball').forEach(el => el.remove()); balls = []; selectedBalls = []; score = 0; combo = 0; feverGauge = 0; scoreEl.innerText = '0'; feverBar.style.width = '0%'; isFever = false; spawnRate = 1600; isFrozen = false; isFoggy = false; updateSumDisplay(); updateCoinUI(); }
 </script>
 </body>
 </html>
